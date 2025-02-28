@@ -61,7 +61,9 @@ contract RaffleTest is Test {
         assert(raffle.getPlayers(0) == PLAYER);
     }
 
-    /**Testing Events */
+    /**
+     * Testing Events
+     */
     function testWillEmitEventAfterEnteringRaffle() external {
         vm.prank(PLAYER);
         vm.expectEmit(true, false, false, false, address(raffle));
