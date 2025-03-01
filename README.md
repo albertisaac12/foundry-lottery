@@ -77,3 +77,7 @@ cast sig "function()";
 openchain.xyz // database of function signatures
 
 Helper Config helps you to deploy the contracts and provides the instances back to the deploy script which then is used inside the tests to carry out the tests.
+
+forge coverage --report debug > coverage.txt
+
+//0th topic is reserved for something else.
