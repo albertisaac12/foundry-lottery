@@ -8,31 +8,40 @@ import {LinkToken} from "./../test/mocks/LinkToken.sol";
 import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 
 contract CreateSubscription is Script {
-    function createSubscrtiptionUsingConfig() public returns (uint256, address) {
+    function createSubscrtiptionUsingConfig()
+        public
+        returns (uint256, address)
+    {
         HelperConfig helperConfig = new HelperConfig();
 
-        HelperConfig.NetworkConfig memory activeConfig = helperConfig.getConfig();
+        HelperConfig.NetworkConfig memory activeConfig = helperConfig
+            .getConfig();
 
         address vrfCoordinator = activeConfig.vrfCoordinator;
-        (uint256 subId,) = createSubscription(vrfCoordinator);
+        (uint256 subId, ) = createSubscription(vrfCoordinator);
         return (subId, vrfCoordinator);
     }
 
-    function createSubscription(address vrfCoordinator) public returns (uint256, address) {
+    function createSubscription(
+        address vrfCoordinator
+    ) public returns (uint256, address) {
         console.log("Creating subscribtion on chain Id: ", block.chainid);
         vm.startBroadcast();
-        uint256 subId = VRFCoordinatorV2_5Mock(vrfCoordinator).createSubscription();
+        uint256 subId = VRFCoordinatorV2_5Mock(vrfCoordinator)
+            .createSubscription();
         vm.stopBroadcast();
 
         console.log("SubId: ", subId);
-        console.log("Please update the subscription Id in your HelperConfig.s.sol");
+        console.log(
+            "Please update the subscription Id in your HelperConfig.s.sol"
+        );
 
         return (subId, vrfCoordinator);
     }
 }
 
 contract FundSubscription is Script, CodeConstants {
-    uint256 public constant FUND_AMOUNT = 3 ether;
+    uint256 public constant FUND_AMOUNT = 100 ether;
 
     // function fundSubscriptionUsingConfig() public {
     //     HelperConfig helperConfig = new HelperConfig();
@@ -44,15 +53,26 @@ contract FundSubscription is Script, CodeConstants {
     //     vm.stopBroadcast();
     // }
 
-    function fundSubscription(address vrfCoordinator, uint256 subscriptionId, address linkToken) public {
+    function fundSubscription(
+        address vrfCoordinator,
+        uint256 subscriptionId,
+        address linkToken
+    ) public {
         console.log("SubId: ", subscriptionId);
         console.log("coordinator: ", vrfCoordinator);
         console.log("chainId: ", block.chainid);
         vm.startBroadcast();
         if (block.chainid == LOCAL_CHAIN_ID) {
-            VRFCoordinatorV2_5Mock(vrfCoordinator).fundSubscription(subscriptionId, FUND_AMOUNT);
+            VRFCoordinatorV2_5Mock(vrfCoordinator).fundSubscription(
+                subscriptionId,
+                FUND_AMOUNT
+            );
         } else {
-            LinkToken(linkToken).transferAndCall(vrfCoordinator, FUND_AMOUNT, abi.encode(subscriptionId));
+            LinkToken(linkToken).transferAndCall(
+                vrfCoordinator,
+                FUND_AMOUNT,
+                abi.encode(subscriptionId)
+            );
         }
         vm.stopBroadcast();
     }
@@ -72,12 +92,19 @@ contract AddConsumer is Script {
     //     vm.stopBroadcast();
     // }
 
-    function addConsumer(address contractToAddtoVrf, address vrfCoordinator, uint256 subId) public {
+    function addConsumer(
+        address contractToAddtoVrf,
+        address vrfCoordinator,
+        uint256 subId
+    ) public {
         console.log("Adding consumer contract", contractToAddtoVrf);
         console.log("To vrfCoordinator", vrfCoordinator);
         console.log("On ChainId", block.chainid);
         vm.startBroadcast();
-        VRFCoordinatorV2_5Mock(vrfCoordinator).addConsumer(subId, contractToAddtoVrf);
+        VRFCoordinatorV2_5Mock(vrfCoordinator).addConsumer(
+            subId,
+            contractToAddtoVrf
+        );
         vm.stopBroadcast();
     }
 

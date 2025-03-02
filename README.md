@@ -81,3 +81,5 @@ Helper Config helps you to deploy the contracts and provides the instances back 
 forge coverage --report debug > coverage.txt
 
 //0th topic is reserved for something else.
+
+## State-Less Fuzz Testing and StateFull Fuzz Testing
