@@ -18,15 +18,17 @@ contract CreateSubscription is Script {
             .getConfig();
 
         address vrfCoordinator = activeConfig.vrfCoordinator;
-        (uint256 subId, ) = createSubscription(vrfCoordinator);
+        address account = activeConfig.account;
+        (uint256 subId, ) = createSubscription(vrfCoordinator, account);
         return (subId, vrfCoordinator);
     }
 
     function createSubscription(
-        address vrfCoordinator
+        address vrfCoordinator,
+        address account
     ) public returns (uint256, address) {
         console.log("Creating subscribtion on chain Id: ", block.chainid);
-        vm.startBroadcast();
+        vm.startBroadcast(account);
         uint256 subId = VRFCoordinatorV2_5Mock(vrfCoordinator)
             .createSubscription();
         vm.stopBroadcast();
@@ -43,38 +45,41 @@ contract CreateSubscription is Script {
 contract FundSubscription is Script, CodeConstants {
     uint256 public constant FUND_AMOUNT = 100 ether;
 
-    // function fundSubscriptionUsingConfig() public {
-    //     HelperConfig helperConfig = new HelperConfig();
-    //     address vrfCoordinator = helperConfig.getConfig().vrfCoordinator;
-    //     uint256 subscriptionId = helperConfig.getConfig().subscriptionId;
-    //     address linkToken = helperConfig.getConfig().link;
-    //     vm.startBroadcast();
-    //     fundSubscription(vrfCoordinator, subscriptionId, linkToken);
-    //     vm.stopBroadcast();
-    // }
+    function fundSubscriptionUsingConfig() public {
+        HelperConfig helperConfig = new HelperConfig();
+        address vrfCoordinator = helperConfig.getConfig().vrfCoordinator;
+        uint256 subscriptionId = helperConfig.getConfig().subscriptionId;
+        address linkToken = helperConfig.getConfig().link;
+        address account = helperConfig.getConfig().account;
+        fundSubscription(vrfCoordinator, subscriptionId, linkToken, account);
+    }
 
     function fundSubscription(
         address vrfCoordinator,
         uint256 subscriptionId,
-        address linkToken
+        address linkToken,
+        address account
     ) public {
         console.log("SubId: ", subscriptionId);
         console.log("coordinator: ", vrfCoordinator);
         console.log("chainId: ", block.chainid);
-        vm.startBroadcast();
+
         if (block.chainid == LOCAL_CHAIN_ID) {
+            vm.startBroadcast();
             VRFCoordinatorV2_5Mock(vrfCoordinator).fundSubscription(
                 subscriptionId,
                 FUND_AMOUNT
             );
+            vm.stopBroadcast();
         } else {
+            vm.startBroadcast(account);
             LinkToken(linkToken).transferAndCall(
                 vrfCoordinator,
                 FUND_AMOUNT,
                 abi.encode(subscriptionId)
             );
+            vm.stopBroadcast();
         }
-        vm.stopBroadcast();
     }
 
     // function run() external {
@@ -83,24 +88,31 @@ contract FundSubscription is Script, CodeConstants {
 }
 
 contract AddConsumer is Script {
-    // function addConsumerUsingConfig(address contractToAddtoVrf) public {
-    //     HelperConfig helperConfig = new HelperConfig();
-    //     uint256 subscriptionId = helperConfig.getConfig().subscriptionId;
-    //     address vrfCoordinator = helperConfig.getConfig().vrfCoordinator;
-    //     vm.startBroadcast();
-    //     addConsumer(contractToAddtoVrf, vrfCoordinator, subscriptionId);
-    //     vm.stopBroadcast();
-    // }
+    function addConsumerUsingConfig(address contractToAddtoVrf) public {
+        HelperConfig helperConfig = new HelperConfig();
+        uint256 subscriptionId = helperConfig.getConfig().subscriptionId;
+        address vrfCoordinator = helperConfig.getConfig().vrfCoordinator;
+        address account = helperConfig.getConfig().account;
+        // vm.startBroadcast();
+        addConsumer(
+            contractToAddtoVrf,
+            vrfCoordinator,
+            subscriptionId,
+            account
+        );
+        // vm.stopBroadcast();
+    }
 
     function addConsumer(
         address contractToAddtoVrf,
         address vrfCoordinator,
-        uint256 subId
+        uint256 subId,
+        address account
     ) public {
         console.log("Adding consumer contract", contractToAddtoVrf);
         console.log("To vrfCoordinator", vrfCoordinator);
         console.log("On ChainId", block.chainid);
-        vm.startBroadcast();
+        vm.startBroadcast(account);
         VRFCoordinatorV2_5Mock(vrfCoordinator).addConsumer(
             subId,
             contractToAddtoVrf
@@ -108,11 +120,11 @@ contract AddConsumer is Script {
         vm.stopBroadcast();
     }
 
-    // function run() external {
-    //     address mostRecentlydep = DevOpsTools.get_most_recent_deployment(
-    //         "Raffle",
-    //         block.chainid
-    //     );
-    //     // addConsumerUsingConfig(mostRecentlydep);
-    // }
+    function run() external {
+        address mostRecentlydep = DevOpsTools.get_most_recent_deployment(
+            "Raffle",
+            block.chainid
+        );
+        addConsumerUsingConfig(mostRecentlydep);
+    }
 }

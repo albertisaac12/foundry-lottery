@@ -69,8 +69,10 @@ emit event; // copy paste the actual events into the test file
 
 match test is now --mt
 
+```solidity
 vm.warp(); // sets the block.timestamp
 vm.roll(); // forwards the blocknumber
+```
 
 cast sig "function()";
 
@@ -80,6 +82,24 @@ Helper Config helps you to deploy the contracts and provides the instances back 
 
 forge coverage --report debug > coverage.txt
 
+```solidity
+vm.getRecordedLogs();
+bytes32 requestId = entries[1].topics[1];
 //0th topic is reserved for something else.
+```
 
-## State-Less Fuzz Testing and StateFull Fuzz Testing
+State-Less Fuzz Testing and StateFull Fuzz Testing
+
+```solidity
+vm.expectEmit(bool topic1, bool topic2, bool topic3,bool data,address contract);
+```
+
+```solidity
+vm.expectRevert(); // use this when there are no custom errors
+
+vm.expectRevert(contract.error.selector); // use this when you expect to revert with a custom error without any arguments
+
+vm.expectRevert(abi.encodeWithSelector(contract.error.selector, args)) // use this when you expect to revert with a custom error with arguments
+```
+
+`forge test --debug testCaseName`

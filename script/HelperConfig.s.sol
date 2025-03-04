@@ -34,6 +34,7 @@ contract HelperConfig is Script, CodeConstants {
         uint256 subscriptionId;
         uint32 callbackGasLimit;
         address link;
+        address account;
     }
 
     NetworkConfig public localNetworkConfig;
@@ -43,7 +44,9 @@ contract HelperConfig is Script, CodeConstants {
         networkConfigs[BASE_SEPOLIA_CHAIN_ID] = getBaseSepoliaEthConfig();
     }
 
-    function getConfigBychainId(uint256 chainId) public returns (NetworkConfig memory) {
+    function getConfigBychainId(
+        uint256 chainId
+    ) public returns (NetworkConfig memory) {
         if (networkConfigs[chainId].vrfCoordinator != address(0)) {
             return networkConfigs[chainId];
         } else if (chainId == LOCAL_CHAIN_ID) {
@@ -60,8 +63,11 @@ contract HelperConfig is Script, CodeConstants {
 
         // Deploy mocks and such
         vm.startBroadcast();
-        VRFCoordinatorV2_5Mock vrfCoordinatorMock =
-            new VRFCoordinatorV2_5Mock(MOCK_BASE_FEE, MOCK_GAS_PRICE_LINK, MOCK_WEI_PER_UINT_LINK);
+        VRFCoordinatorV2_5Mock vrfCoordinatorMock = new VRFCoordinatorV2_5Mock(
+            MOCK_BASE_FEE,
+            MOCK_GAS_PRICE_LINK,
+            MOCK_WEI_PER_UINT_LINK
+        );
         LinkToken linkToken = new LinkToken();
         vm.stopBroadcast();
 
@@ -73,22 +79,31 @@ contract HelperConfig is Script, CodeConstants {
             gasLane: 0x9e1344a1247c8a1785d0a4681a27152bffdb43666ae5bf7d14d24a5efd44bf71,
             subscriptionId: 0,
             callbackGasLimit: 500_000,
-            link: address(linkToken)
+            link: address(linkToken),
+            account: address(
+                uint160(uint256(keccak256("foundry default caller")))
+            )
         });
 
         return localNetworkConfig;
     }
 
-    function getBaseSepoliaEthConfig() public pure returns (NetworkConfig memory) {
-        return NetworkConfig({
-            entranceFee: 0.01 ether,
-            interval: 30,
-            vrfCoordinator: 0x5C210eF41CD1a72de73bF76eC39637bB0d3d7BEE,
-            gasLane: 0x9e1344a1247c8a1785d0a4681a27152bffdb43666ae5bf7d14d24a5efd44bf71,
-            subscriptionId: 108902772650047472604608192822028927737783408746009437859305453358955212339355,
-            callbackGasLimit: 500_000,
-            link: 0xE4aB69C077896252FAFBD49EFD26B5D171A32410
-        });
+    function getBaseSepoliaEthConfig()
+        public
+        pure
+        returns (NetworkConfig memory)
+    {
+        return
+            NetworkConfig({
+                entranceFee: 0.01 ether,
+                interval: 30,
+                vrfCoordinator: 0x5C210eF41CD1a72de73bF76eC39637bB0d3d7BEE,
+                gasLane: 0x9e1344a1247c8a1785d0a4681a27152bffdb43666ae5bf7d14d24a5efd44bf71,
+                subscriptionId: 108902772650047472604608192822028927737783408746009437859305453358955212339355,
+                callbackGasLimit: 500_000,
+                link: 0xE4aB69C077896252FAFBD49EFD26B5D171A32410,
+                account: 0xcAb2090bB980F8eb5b908747Fb731362E6C90CBC
+            });
     }
 
     function getConfig() external returns (NetworkConfig memory) {

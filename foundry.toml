@@ -13,3 +13,5 @@ fs_permissions = [
 
 [fuzz]
 runs = 1000
+
+[etehrscan]

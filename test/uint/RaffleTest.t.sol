@@ -197,13 +197,20 @@ contract RaffleTest is Test {
         assert(uint256(raffleState) == 1);
     }
 
+    modifier skipFork() {
+        if (block.chainid != 31337) {
+            return;
+        }
+        _;
+    }
+
     /*//////////////////////////////////////////////////////////////
                            FULFILL RANDOM WORDS
     //////////////////////////////////////////////////////////////*/
 
     function testFullfilRandomWordsCanOnlyBeCalledAfterPerformUpkeep(
         uint256 reqId
-    ) public raffleEntered {
+    ) public raffleEntered skipFork {
         vm.expectRevert(VRFCoordinatorV2_5Mock.InvalidRequest.selector);
         VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(
             reqId,
@@ -214,6 +221,7 @@ contract RaffleTest is Test {
     function testFulfillrandomWordsPicksAWinnerAndSendsMoney()
         public
         raffleEntered
+        skipFork
     {
         uint256 people = 3;
         uint256 startingIndex = 1;
